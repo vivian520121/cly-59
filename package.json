@@ -1,0 +1,27 @@
+{
+  "name": "herbarium-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.7",
+    "idb": "^8.0.0",
+    "jspdf": "^2.5.1",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6",
+    "vue-tsc": "^2.0.6",
+    "sass": "^1.71.1"
+  }
+}
