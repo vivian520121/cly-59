@@ -2,11 +2,14 @@
   <div
     class="decoration-drawer"
     :class="{ 'is-open': isOpen }"
-    @touchstart="onHandleTouchStart"
-    @touchmove="onHandleTouchMove"
-    @touchend="onHandleTouchEnd"
   >
-    <div class="drawer-handle" @mousedown="onHandleMouseDown">
+    <div
+      class="drawer-handle"
+      @mousedown="onHandleMouseDown"
+      @touchstart="onHandleTouchStart"
+      @touchmove="onHandleTouchMove"
+      @touchend="onHandleTouchEnd"
+    >
       <div class="handle-bar"></div>
       <span class="handle-text">{{ isOpen ? '收起装饰' : '打开装饰' }}</span>
     </div>
@@ -171,6 +174,7 @@ let isDraggingHandle = false
 
 function onHandleMouseDown(e: MouseEvent) {
   startY = e.clientY
+  currentY = e.clientY
   isDraggingHandle = true
   document.addEventListener('mousemove', onHandleMouseMove)
   document.addEventListener('mouseup', onHandleMouseUp)
@@ -186,7 +190,7 @@ function onHandleMouseUp() {
   const deltaY = currentY - startY
   if (Math.abs(deltaY) > 30) {
     isOpen.value = deltaY < 0
-  } else if (Math.abs(deltaY) < 5) {
+  } else {
     isOpen.value = !isOpen.value
   }
   isDraggingHandle = false
@@ -196,6 +200,7 @@ function onHandleMouseUp() {
 
 function onHandleTouchStart(e: TouchEvent) {
   startY = e.touches[0].clientY
+  currentY = e.touches[0].clientY
   isDraggingHandle = true
 }
 
@@ -209,7 +214,7 @@ function onHandleTouchEnd() {
   const deltaY = currentY - startY
   if (Math.abs(deltaY) > 30) {
     isOpen.value = deltaY < 0
-  } else if (Math.abs(deltaY) < 5) {
+  } else {
     isOpen.value = !isOpen.value
   }
   isDraggingHandle = false

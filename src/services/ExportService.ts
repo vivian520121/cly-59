@@ -132,8 +132,9 @@ export class ExportService {
 
     const padding = 40
 
-    if (specimen.filteredImageBlob) {
-      const img = await this.blobToImage(specimen.filteredImageBlob)
+    const imageBlob = specimen.filteredImageBlob || specimen.imageBlob
+    if (imageBlob) {
+      const img = await this.blobToImage(imageBlob)
       const imgAspect = img.width / img.height
       let drawWidth = width - padding * 2
       let drawHeight = drawWidth / imgAspect
