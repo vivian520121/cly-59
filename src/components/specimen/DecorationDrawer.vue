@@ -14,15 +14,20 @@
     <div class="drawer-content" v-show="isOpen">
       <div class="drawer-header">
         <h3 class="drawer-title">装饰元素</h3>
-        <div class="search-wrapper">
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="search-input"
-            placeholder="搜索装饰..."
-            @input="onSearch"
-          />
-          <span class="search-icon">🔍</span>
+        <div class="header-actions">
+          <div class="search-wrapper">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="search-input"
+              placeholder="搜索装饰..."
+              @input="onSearch"
+            />
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="close-btn" @click="closeDrawer" title="关闭">
+            <span class="close-icon">×</span>
+          </button>
         </div>
       </div>
 
@@ -138,6 +143,14 @@ function onItemClick(preset: DecorationPreset) {
   emit('decorationAdded', decoration)
 }
 
+function closeDrawer() {
+  isOpen.value = false
+}
+
+function toggleDrawer() {
+  isOpen.value = !isOpen.value
+}
+
 function createDragImage(preset: DecorationPreset): HTMLElement {
   const img = document.createElement('img')
   img.src = preset.src
@@ -173,6 +186,8 @@ function onHandleMouseUp() {
   const deltaY = currentY - startY
   if (Math.abs(deltaY) > 30) {
     isOpen.value = deltaY < 0
+  } else if (Math.abs(deltaY) < 5) {
+    isOpen.value = !isOpen.value
   }
   isDraggingHandle = false
   document.removeEventListener('mousemove', onHandleMouseMove)
@@ -194,6 +209,8 @@ function onHandleTouchEnd() {
   const deltaY = currentY - startY
   if (Math.abs(deltaY) > 30) {
     isOpen.value = deltaY < 0
+  } else if (Math.abs(deltaY) < 5) {
+    isOpen.value = !isOpen.value
   }
   isDraggingHandle = false
 }
@@ -298,12 +315,53 @@ watch(activeTab, () => {
   @include serif-text(20px, 600);
   color: var(--text-primary);
   margin: 0;
+  flex-shrink: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .search-wrapper {
   position: relative;
   flex: 1;
   max-width: 240px;
+}
+
+.close-btn {
+  @include button-reset;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-paper);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: var(--accent-red);
+    border-color: var(--accent-red);
+    color: #fff;
+    transform: rotate(90deg);
+  }
+}
+
+.close-icon {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-secondary);
+
+  .close-btn:hover & {
+    color: #fff;
+  }
 }
 
 .search-input {

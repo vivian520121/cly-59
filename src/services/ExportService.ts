@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import type { Specimen } from '@/types/specimen'
+import type { DecorationItem } from '@/types/decoration'
 import { CanvasFilterService } from './CanvasFilterService'
 
 export type PaperStyle = 'kraft' | 'white' | 'vintage'
@@ -154,6 +155,10 @@ export class ExportService {
       ctx.restore()
 
       this.drawTapeCorners(ctx, imgX, imgY, drawWidth, drawHeight)
+
+      if (specimen.decorations && specimen.decorations.length > 0) {
+        await this.drawDecorations(ctx, specimen.decorations, imgX, imgY, drawWidth, drawHeight)
+      }
     }
 
     const infoY = imageHeight + 60
@@ -162,6 +167,69 @@ export class ExportService {
     this.drawSealStamp(ctx, width - 100, height - 100)
 
     return canvas
+  }
+
+  static async drawDecorations(
+    ctx: CanvasRenderingContext2D,
+    decorations: DecorationItem[],
+    imgX: number,
+    imgY: number,
+    drawWidth: number,
+    drawHeight: number
+  ): Promise<void> {
+    const canvasWidth = 600
+    const canvasHeight = 450
+    const imgAspect = drawWidth / drawHeight
+    const canvasAspect = canvasWidth / canvasHeight
+
+    let imgWidthInCanvas: number
+    let imgHeightInCanvas: number
+
+    if (imgAspect > canvasAspect) {
+      imgWidthInCanvas = canvasWidth
+      imgHeightInCanvas = canvasWidth / imgAspect
+    } else {
+      imgHeightInCanvas = canvasHeight
+      imgWidthInCanvas = canvasHeight * imgAspect
+    }
+
+    const imgXInCanvas = (canvasWidth - imgWidthInCanvas) / 2
+    const imgYInCanvas = (canvasHeight - imgHeightInCanvas) / 2
+    const scale = drawWidth / imgWidthInCanvas
+
+    const sortedDecorations = [...decorations].sort((a, b) => a.zIndex - b.zIndex)
+
+    for (const decoration of sortedDecorations) {
+      const img = await this.loadImage(decoration.src)
+
+      const relX = decoration.x - imgXInCanvas
+      const relY = decoration.y - imgYInCanvas
+
+      const x = imgX + relX * scale
+      const y = imgY + relY * scale
+      const w = decoration.width * scale
+      const h = decoration.height * scale
+
+      const centerX = x + w / 2
+      const centerY = y + h / 2
+
+      ctx.save()
+      ctx.globalAlpha = decoration.opacity
+      ctx.translate(centerX, centerY)
+      ctx.rotate((decoration.rotation * Math.PI) / 180)
+      ctx.drawImage(img, -w / 2, -h / 2, w, h)
+      ctx.restore()
+    }
+  }
+
+  static async loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => resolve(img)
+      img.onerror = () => reject(new Error(`Failed to load image: ${src}`))
+      img.src = src
+    })
   }
 
   static addPaperBackground(canvas: HTMLCanvasElement, style: PaperStyle = 'vintage'): void {

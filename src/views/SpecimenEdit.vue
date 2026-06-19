@@ -134,7 +134,7 @@
         <button
           class="action-btn secondary-btn"
           @click="handleExport"
-          :disabled="!canSave || isSaving || isExporting"
+          :disabled="!canExport || isSaving || isExporting"
         >
           <span v-if="!isExporting" class="btn-icon">📥</span>
           <span v-else class="btn-icon loading"></span>
@@ -195,7 +195,8 @@ import InfoForm from '@/components/specimen/InfoForm.vue'
 import DecorationCanvas from '@/components/specimen/DecorationCanvas.vue'
 import DecorationDrawer from '@/components/specimen/DecorationDrawer.vue'
 import { useSpecimens } from '@/composables/useSpecimens'
-import type { SpecimenFormData, DecorationItem, DecorationType } from '@/types'
+import { useExport } from '@/composables/useExport'
+import type { SpecimenFormData, DecorationItem, DecorationType, Specimen } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -211,6 +212,11 @@ const {
   blobToDataURL
 } = useSpecimens()
 
+const {
+  exporting: isExporting,
+  exportLongImageAndDownload
+} = useExport()
+
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const filterCanvasRef = ref<InstanceType<typeof FilterCanvas> | null>(null)
 const infoFormRef = ref<InstanceType<typeof InfoForm> | null>(null)
@@ -222,7 +228,6 @@ const originalImageBlob = ref<Blob | null>(null)
 const filteredImageBlob = ref<Blob | null>(null)
 const isDragOver = ref(false)
 const isSaving = ref(false)
-const isExporting = ref(false)
 const showPreview = ref(false)
 const showUnsavedWarning = ref(false)
 const previewImageUrl = ref<string | null>(null)
@@ -247,6 +252,11 @@ const canSave = computed(() => {
   const hasLocation = formData.location.trim().length > 0
   const hasSeason = !!formData.season
   return hasImage && hasName && hasLocation && hasSeason && !isSaving.value && !isExporting.value
+})
+
+const canExport = computed(() => {
+  const hasImage = !!originalImageBlob.value
+  return hasImage && !isSaving.value && !isExporting.value
 })
 
 function triggerFileInput() {
@@ -413,25 +423,29 @@ async function handlePreview() {
 }
 
 async function handleExport() {
-  if (!canSave.value) return
+  if (!canExport.value) return
   
-  isExporting.value = true
   try {
-    const imageBlob = filteredImageBlob.value || originalImageBlob.value
-    if (!imageBlob) return
+    const specimen: Specimen = {
+      id: isEdit.value ? Number(route.params.id) : undefined,
+      name: formData.name || '未命名标本',
+      imageBlob: originalImageBlob.value,
+      filteredImageBlob: filteredImageBlob.value,
+      location: formData.location || '—',
+      season: formData.season,
+      plantType: formData.plantType,
+      environment: formData.environment,
+      bloomPeriod: formData.bloomPeriod,
+      notes: formData.notes,
+      positionIndex: 0,
+      decorations: decorations.value,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
 
-    const url = URL.createObjectURL(imageBlob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${formData.name || '标本'}_${Date.now()}.png`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    await exportLongImageAndDownload(specimen)
   } catch (error) {
     console.error('Failed to export image:', error)
-  } finally {
-    isExporting.value = false
   }
 }
 
