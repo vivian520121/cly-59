@@ -3,7 +3,7 @@
     :class="['app-container', 'paper-texture']"
     :data-theme="themeStore.currentTheme"
   >
-    <AppHeader>
+    <AppHeader @create="goToCreate" @export="goToExport">
       <slot name="header-actions"></slot>
     </AppHeader>
 
@@ -19,14 +19,23 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import { useThemeStore } from '@/stores/theme'
 import { useSpecimenStore } from '@/stores/specimen'
 import { indexedDBService } from '@/services/IndexedDBService'
 
+const router = useRouter()
 const themeStore = useThemeStore()
 const specimenStore = useSpecimenStore()
+
+function goToCreate() {
+  router.push('/specimen/new')
+}
+
+function goToExport() {
+  router.push('/album/export')
+}
 
 onMounted(async () => {
   await indexedDBService.init()

@@ -80,7 +80,8 @@
           <div v-show="activeTab === 'info'" class="info-panel">
             <InfoForm
               ref="infoFormRef"
-              v-model="formData"
+              :modelValue="formData"
+              @update:modelValue="handleFormDataUpdate"
             />
           </div>
 
@@ -259,6 +260,13 @@ const canExport = computed(() => {
   const hasImage = !!originalImageBlob.value
   return hasImage && !isSaving.value && !isExporting.value
 })
+
+function handleFormDataUpdate(newData: SpecimenFormData) {
+  Object.assign(formData, newData, {
+    bloomPeriod: [...newData.bloomPeriod]
+  })
+  hasUnsavedChanges.value = true
+}
 
 function triggerFileInput() {
   fileInputRef.value?.click()

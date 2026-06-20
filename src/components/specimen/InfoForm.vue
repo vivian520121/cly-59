@@ -164,7 +164,10 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const localData = reactive<SpecimenFormData>({ ...props.modelValue })
+const localData = reactive<SpecimenFormData>({
+  ...props.modelValue,
+  bloomPeriod: [...props.modelValue.bloomPeriod]
+})
 const errors = reactive<Partial<Record<keyof SpecimenFormData, string>>>({})
 
 const seasons: { value: Season; label: string; color: string }[] = [
@@ -213,7 +216,10 @@ function toggleBloomPeriod(period: string) {
 
 function emitUpdate() {
   validateForm()
-  emit('update:modelValue', { ...localData })
+  emit('update:modelValue', {
+    ...localData,
+    bloomPeriod: [...localData.bloomPeriod]
+  })
 }
 
 function validateForm() {
@@ -237,7 +243,9 @@ function validateForm() {
 watch(
   () => props.modelValue,
   (newValue) => {
-    Object.assign(localData, newValue)
+    Object.assign(localData, newValue, {
+      bloomPeriod: [...newValue.bloomPeriod]
+    })
   },
   { deep: true }
 )
