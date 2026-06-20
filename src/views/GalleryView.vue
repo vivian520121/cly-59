@@ -1,7 +1,5 @@
 <template>
   <div class="gallery-view" :class="{ 'is-dragging': isDragging }">
-    <AppHeader @create="goToCreate" @export="goToExport" />
-
     <div class="gallery-content">
       <SideFilter />
 
@@ -115,7 +113,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '@/components/layout/AppHeader.vue'
 import SideFilter from '@/components/layout/SideFilter.vue'
 import SpecimenCard from '@/components/specimen/SpecimenCard.vue'
 import { useSpecimens } from '@/composables/useSpecimens'

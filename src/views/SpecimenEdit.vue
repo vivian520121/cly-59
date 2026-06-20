@@ -34,7 +34,7 @@
               <p class="upload-hint">支持粘贴剪贴板图片 (Ctrl+V)</p>
             </div>
 
-            <div v-else class="upload-preview">
+            <div v-else class="upload-preview" @click.stop>
               <FilterCanvas
                 ref="filterCanvasRef"
                 :initial-image="originalImageBlob"
@@ -90,17 +90,18 @@
               <p class="disabled-text">请先上传图片后再添加装饰</p>
             </div>
             <div v-else class="decoration-canvas-wrapper">
+              <DecorationDrawer
+                :decoration-count="decorations.length"
+                @decoration-added="onDecorationAdded"
+                @decoration-drag-start="onDecorationDragStart"
+                @decoration-drag-end="onDecorationDragEnd"
+              />
               <DecorationCanvas
                 ref="decorationCanvasRef"
                 :specimen-image="filteredImageBlob || originalImageBlob"
                 :decorations="decorations"
                 @update:decorations="decorations = $event; hasUnsavedChanges = true"
                 @decoration-selected="onDecorationSelected"
-              />
-              <DecorationDrawer
-                @decoration-added="onDecorationAdded"
-                @decoration-drag-start="onDecorationDragStart"
-                @decoration-drag-end="onDecorationDragEnd"
               />
             </div>
           </div>
