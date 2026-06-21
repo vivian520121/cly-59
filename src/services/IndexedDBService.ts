@@ -45,6 +45,17 @@ class IndexedDBService {
     return this.db!
   }
 
+  private toStorable(specimen: Partial<Specimen>): Partial<Specimen> {
+    const storable: Partial<Specimen> = { ...specimen }
+    if (specimen.bloomPeriod) {
+      storable.bloomPeriod = [...specimen.bloomPeriod]
+    }
+    if (specimen.decorations) {
+      storable.decorations = specimen.decorations.map((d) => ({ ...d }))
+    }
+    return storable
+  }
+
   async getAllSpecimens(): Promise<Specimen[]> {
     const db = await this.ensureDB()
     const specimens = await db.getAllFromIndex(STORE_SPECIMENS, 'positionIndex')
@@ -71,11 +82,11 @@ class IndexedDBService {
   async addSpecimen(specimen: Omit<Specimen, 'id'>): Promise<number> {
     const db = await this.ensureDB()
     const now = new Date()
-    const data = {
+    const data = this.toStorable({
       ...specimen,
       createdAt: now,
       updatedAt: now,
-    }
+    })
     return (await db.add(STORE_SPECIMENS, data)) as number
   }
 
@@ -84,12 +95,12 @@ class IndexedDBService {
     const existing = await this.getSpecimen(id)
     if (!existing) return
 
-    const updated = {
+    const updated = this.toStorable({
       ...existing,
       ...updates,
       id,
       updatedAt: new Date(),
-    }
+    })
     await db.put(STORE_SPECIMENS, updated)
   }
 
